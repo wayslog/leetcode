@@ -1,7 +1,7 @@
 all:build test
 
 build:
-	clang++ main.cpp -o demo
+	clang++ main.cpp -o demo.out
 
 test:
-	echo "" && ./demo && echo "" && echo "test OK"
+	echo "" && ./demo.out && echo "" && echo "test OK"
