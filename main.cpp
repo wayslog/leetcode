@@ -2,101 +2,86 @@
 #include <sstream>
 #include <math.h>
 #include <string>
-#include <set>
 #include <vector>
+#include <stack>
+#include <limits.h>
+
+
 // for test
 #include <fstream>
 #include <assert.h>
-// zigzag
-// n=2,3... 第x(x=0,1..)第y(y=0,1..)列的值为
-// z0 = x         0   1
-// z1 = 4-x       4   3
-// z2 = x + 1*4   4   5
-// z3 = 4-x + 1*4 8   7
-// z4 = x + 2*4   8   9
-// z5 = 4-x + 2*4 12  11
 
-//
-// x=0 0   4   8     12    16
-// x=1 1 3 5 7 9  11 13 15
-// x=2 2   6   10    14
-
-// n = 4
-//
-// x=0 0     6       12
-// x=1 1   5 7    11 13
-// x=2 2 4   8 10    14  16
-// x=3 3     9       15
+// 2147483647
+// 3000000001
 
 using namespace std;
 class Solution {
 public:
-  string convert(string s, int numRows) {
-    if (numRows<=1) return s;
-    size_t lenOfStr = s.size();
-
-    vector<vector<int> > matrix ;
-
-    for (int i = 0; i<numRows; i++) {
-      vector<int> val = pickUp(lenOfStr, numRows, i);
-      matrix.push_back(val);
+  int reverse(int x) {
+    if (x==0) return 0;
+    bool nag = false;
+    int val = x;
+    if(x<0){
+      nag=true;
+      val = -val;
     }
-    return format(s, matrix);
+    stack<short> q = split(val);
+    int ret = int_concat(q);
+    return nag ? -ret : ret;
   }
-
-  string format(string ori,const vector<vector<int> > & ma) {
-    string s(ori);
-    int ord = 0;
-    for (int i = 0; i< ma.size(); i++) {
-      vector<int> vals = ma[i];
-      cout<<endl;
-      for (int j = 0; j<vals.size(); j++){
-        int pos = vals[j];
-        cout<<pos<<" ";
-        s[ord++] = ori[pos];
+  stack<short> split(int val){
+    stack<short> q;
+    bool canPush = false;
+    for (; val != 0;) {
+      int left = val/10;
+      short mod = val%10;
+      if (mod != 0 || canPush){
+        q.push(mod);
+        canPush = true;
       }
+      val = left;
     }
-    cout<<endl;
-    return s;
+    return q;
   }
-
-  vector<int> pickUp(size_t lenOfStr, int numRows, int row) {
-    vector<int> ret;
-    int last = -1;
-    int pos = 0;
-    for(size_t i = 0; ; i++){
-      if (i%2==0) {
-        pos = row + 2*(i/2)*(numRows-1);
-      }else {
-        pos = 2*numRows-2-row + 2*(i/2)*(numRows-1);
-      }
-      if (pos >= lenOfStr){
-        return ret;
-      }
-      if (pos != last){
-        last = pos;
-        ret.push_back(last);
-      }
+  int int_concat(stack<short>& q){
+    long ret = 0;
+    int times = 0;
+    while(!q.empty()){
+      ret += q.top() * long_pow(10, times++);
+      q.pop();
     }
+    //cout<<endl<<ret<<endl;
+    if (ret > INT_MAX || ret<INT_MIN){
+      return 0;
+    }
+    return int(ret);
+  }
+  long long_pow(int ori, int times) {
+    long ret = 1;
+    for (int i =1; i<=times; i++){
+      ret *= ori;
+    }
+    return ret;
   }
 };
 
 int main() {
   ifstream ins("test.data");
-  string ori;
-  string out;
-  int numRows;
   Solution sol;
-  while(ins>>ori) {
-    ins>>numRows;
-    ins>>out;
-    cout<<"ori:"<<ori<<endl
-        <<"numRows:"<<numRows<<endl<<endl;
-    string t = sol.convert(ori, numRows);
-    assert(t==out);
-    if (t!=out) {
-      cout<<"converted:"<<t<<endl
-          <<"expect   :"<<out<<endl;
+  stack<short> qtest;
+  qtest.push(1);
+  qtest.push(2);
+  assert(sol.split(21)==qtest);
+  assert(sol.int_concat(qtest)==12);
+  assert(sol.long_pow(10,2)==100);
+  int num;
+  int result;
+  while(ins>>num) {
+    ins>>result;
+    int ret = sol.reverse(num);
+    if (ret != result){
+      cout<<"expect:"<<result<<endl
+          <<"butget:"<< ret<<endl;
       break;
     }
   }
